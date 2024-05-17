@@ -4,7 +4,6 @@ from torchmetrics.functional import dice
 from torchmetrics.functional.classification import accuracy, binary_f1_score
 from tqdm import tqdm
 
-
 def ba_inner_loop(model, data, criterion_m, criterion_b, optimizer, device='cpu', train=True):
     running_metrics = {'loss':0, 'boundary_loss':0, 'mask_loss':0, 'accuracy': 0, 'f1': 0, 'dice': 0}
     image1, image2, labels, boundary = data['image_1'], data['image_2'], data['mask'], data['boundary']
