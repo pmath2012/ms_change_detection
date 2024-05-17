@@ -2,11 +2,10 @@ import argparse
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
-from ..boundary_aware import SiameseNetwork, BAUNet
+from ..baselines import UNetC, SwinUNETRC, UNETRC
 from ..utils.utils import get_loss_functions
 from ..dataset import get_siamese_train_loaders
-from .training import train_cd_ba_model, validate_cd_ba_model
-
+from .training import train_cd_model, validate_cd_model
 
 def check_keys(model, pretrain_path):
     # Check for matching keys
@@ -29,15 +28,14 @@ def check_keys(model, pretrain_path):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train Boundary Aware UNet')
-    parser.add_argument('--model_name', type=str, default='SiameseNetwork', help='Model name to use')
+    parser = argparse.ArgumentParser(description='Train baselines')
+    parser.add_argument('--model_name', type=str, default='unet', help='Model name to use')
     parser.add_argument('--epochs', type=int, default=50, help='Number of epochs to train')
     parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
     parser.add_argument('--optimizer', type=str, default='Adam', help='Optimizer to use')
     parser.add_argument('--pretrain', action='store_true', help='Use pre-trained model')
     parser.add_argument('--pretrain_path', type=str, default="", help='Path to pre-trained model')
-    parser.add_argument('--mask_loss', type=str, choices=['f0.5', 'f1', 'f2'], default='f0.5', help='Mask loss function')
-    parser.add_argument('--boundary_loss', type=str, choices=['BCE'], default='BCE', help='Boundary loss function')
+    parser.add_argument('--loss', type=str, choices=['f0.5', 'f1', 'f2'], default='f0.5', help='Mask loss function')
     parser.add_argument('--data_directory', type=str, default='/home/prateek/ms_project/change_balcrop256/', help='Path to data directory')
     parser.add_argument('--batch_size', type=int, default=12, help='Batch size')
     parser.add_argument('--training_file', type=str, default='train_change_only.csv', help='Training file')
@@ -63,8 +61,12 @@ if __name__ == '__main__':
     # Initialize TensorBoard
     writer = SummaryWriter()
 
-    if args.model_name == 'SiameseNetwork':
-        model = SiameseNetwork(in_channels=1, out_channels=1)
+    if args.model_name == 'unet':
+        model = UNetC(in_channels=2, out_channels=1)
+    if args.model_name == 'unetrc':
+        model = UNETRC(in_channels=2, out_channels=1)
+    elif args.model_name == 'swinunetrc':
+        model = SwinUNETRC(in_channels=2, out_channels=1)
     else:
         raise ValueError("Unsupported model name")
 
@@ -72,8 +74,7 @@ if __name__ == '__main__':
         check_keys(model, pretrain_path)
         model.load_state_dict(torch.load(pretrain_path), strict=False)
     
-    train_dataloader, valid_dataloader = get_siamese_train_loaders(train_file, valid_file,
-                                                                   data_directory,batch_size, with_boundary=True)
+    train_dataloader, valid_dataloader = get_siamese_train_loaders(train_file,valid_file, data_directory,batch_size, with_boundary=False)
     
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     else:
         raise ValueError("Unsupported optimizer")
 
-    ckpt=f"{args.model_name}_{args.mask_loss}_{args.boundary_loss}_epochs{epochs}.pth"
+    ckpt=f"{args.model_name}_{args.mask_loss}_epochs{epochs}.pth"
     
     # lists to keep track of losses and accuracies
     best_loss = 0
@@ -93,33 +94,33 @@ if __name__ == '__main__':
 
     for epoch in range(epochs):
         print(f"[INFO]: Epoch {epoch+1} of {epochs}")
-        train_epoch_losses, train_epoch_acc, train_epoch_dice, train_epoch_f1 = train_cd_ba_model(model, train_dataloader,
+        train_epoch_losses, train_epoch_acc, train_epoch_dice, train_epoch_f1 = train_cd_model(model, train_dataloader,
                                                 optimizer, loss_mask, loss_boundary ,device)
-        valid_epoch_losses, valid_epoch_acc, valid_epoch_dice, valid_epoch_f1 = validate_cd_ba_model(model, valid_dataloader,
+        valid_epoch_losses, valid_epoch_acc, valid_epoch_dice, valid_epoch_f1 = validate_cd_model(model, valid_dataloader,
                                                     loss_mask, loss_boundary, device)
 
-        valid_loss = valid_epoch_losses[0]
+        valid_loss = valid_epoch_losses
 
-        writer.add_scalar('Train/Loss', train_epoch_losses[0], epoch)
+        writer.add_scalar('Train/Loss', train_epoch_losses, epoch)
         writer.add_scalar('Train/Accuracy', train_epoch_acc, epoch)
         writer.add_scalar('Train/Dice', train_epoch_dice, epoch)
         writer.add_scalar('Train/F1', train_epoch_f1, epoch)
-        writer.add_scalar('Validation/Loss', valid_epoch_losses[0], epoch)
+        writer.add_scalar('Validation/Loss', valid_epoch_losses, epoch)
         writer.add_scalar('Validation/Accuracy', valid_epoch_acc, epoch)
         writer.add_scalar('Validation/Dice', valid_epoch_dice, epoch)
         writer.add_scalar('Validation/F1', valid_epoch_f1, epoch)
 
-        print(f"Training : {train_epoch_losses[0]:.3f}, b: {train_epoch_losses[2]:.3f}, m: {train_epoch_losses[1]:.3f}, training acc: {train_epoch_acc:.3f}, dice : {train_epoch_dice:.3f}, f1: {train_epoch_f1:.3f}")
-        print(f"Validation : {valid_epoch_losses[0]:.3f}, b: {valid_epoch_losses[2]:.3f},m: {valid_epoch_losses[1]:.3f}, validation acc: {valid_epoch_acc:.3f}, dice : {valid_epoch_dice:.3f}, f1: {valid_epoch_f1:.3f}")
+        print(f"Training : {train_epoch_losses:.3f}, training acc: {train_epoch_acc:.3f}, dice : {train_epoch_dice:.3f}, f1: {train_epoch_f1:.3f}")
+        print(f"Validation : {valid_epoch_losses:.3f}, validation acc: {valid_epoch_acc:.3f}, dice : {valid_epoch_dice:.3f}, f1: {valid_epoch_f1:.3f}")
 
         if len(valid_loss) == 1:
             print("saving first model")
-            best_loss=valid_epoch_losses[0]
+            best_loss=valid_epoch_losses
             best_epoch=epoch
             torch.save(model.state_dict(), ckpt)
-        elif valid_epoch_losses[0] < best_loss:
-            print(f"model loss improved from {best_loss} to {valid_epoch_losses[0]} : saving best")
-            best_loss=valid_epoch_losses[0]
+        elif valid_epoch_losses < best_loss:
+            print(f"model loss improved from {best_loss} to {valid_epoch_losses} : saving best")
+            best_loss=valid_epoch_losses
             best_epoch=epoch
             torch.save(model.state_dict(), ckpt)
         else:
