@@ -5,7 +5,7 @@ from torchvision import transforms
 from .lesions_dataset import MSLesionDataset
 from .siamese_dataset import MSSiameseLesionDataset
 from .ba_dataset import MSBADataset
-from ..utils.group_transforms import Normalize, NormalizeSiamese, NormalizeBASiamese
+from utils.group_transforms import Normalize, NormalizeSiamese, NormalizeBASiamese
 
 
 def get_train_loaders(train_file,valid_file, data_directory, batch_size):

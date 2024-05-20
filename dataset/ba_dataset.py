@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 import os
-from ..utils.utils import load_image
+from utils.utils import load_image
 import numpy as np
 import pandas as pd
 

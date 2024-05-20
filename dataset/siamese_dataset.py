@@ -3,7 +3,7 @@ import  os
 import numpy as np
 import pandas as pd
 from torch.utils.data import Dataset
-from ..utils.utils import load_image
+from utils.utils import load_image
 
 class MSSiameseLesionDataset(Dataset):
     """MS Siamese lesion dataset."""

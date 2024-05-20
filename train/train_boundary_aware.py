@@ -3,7 +3,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from ..boundary_aware import SiameseNetwork, BAUNet
-from ..utils.utils import get_loss_functions
+from ..utils.utils import get_loss_function
 from ..dataset import get_siamese_train_loaders
 from .training import train_cd_ba_model, validate_cd_ba_model
 
@@ -49,7 +49,8 @@ if __name__ == '__main__':
     args = parse_args()
 
     learning_rate = args.learning_rate
-    loss_mask, loss_boundary = get_loss_functions(args.mask_loss, args.boundary_loss)
+    loss_mask = get_loss_function(args.mask_loss)
+    loss_boundary = get_loss_function(args.boundary_loss)
     epochs = args.epochs
     pretrain = args.pretrain
     pretrain_path = args.pretrain_path

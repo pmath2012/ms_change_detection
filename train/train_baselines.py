@@ -2,10 +2,11 @@ import argparse
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
-from ..baselines import UNetC, SwinUNETRC, UNETRC
-from ..utils.utils import get_loss_functions
-from ..dataset import get_siamese_train_loaders
-from .training import train_cd_model, validate_cd_model
+from baselines.unet import UNetC, SwinUNETRC, UNETRC
+from atrous_networks.unet import ASPPUNet
+from utils.utils import get_loss_function
+from dataset import get_siamese_train_loaders
+from train.training import train_cd_model, validate_cd_model
 
 def check_keys(model, pretrain_path):
     # Check for matching keys
@@ -36,7 +37,7 @@ def parse_args():
     parser.add_argument('--pretrain', action='store_true', help='Use pre-trained model')
     parser.add_argument('--pretrain_path', type=str, default="", help='Path to pre-trained model')
     parser.add_argument('--loss', type=str, choices=['f0.5', 'f1', 'f2'], default='f0.5', help='Mask loss function')
-    parser.add_argument('--data_directory', type=str, default='/home/prateek/ms_project/change_balcrop256/', help='Path to data directory')
+    parser.add_argument('--data_directory', type=str, default='/home/prateek/from_kipchoge/ms_project/change_balcrop256/', help='Path to data directory')
     parser.add_argument('--batch_size', type=int, default=12, help='Batch size')
     parser.add_argument('--training_file', type=str, default='train_change_only.csv', help='Training file')
     parser.add_argument('--validation_file', type=str, default='valid.csv', help='Validation file')
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     learning_rate = args.learning_rate
-    loss_mask, loss_boundary = get_loss_functions(args.mask_loss, args.boundary_loss)
+    loss = get_loss_function(args.loss)
     epochs = args.epochs
     pretrain = args.pretrain
     pretrain_path = args.pretrain_path
@@ -67,6 +68,8 @@ if __name__ == '__main__':
         model = UNETRC(in_channels=2, out_channels=1)
     elif args.model_name == 'swinunetrc':
         model = SwinUNETRC(in_channels=2, out_channels=1)
+    elif args.model_name == 'asppunet':
+        model = ASPPUNet(in_channels=2, n_classes=1)
     else:
         raise ValueError("Unsupported model name")
 
@@ -83,7 +86,7 @@ if __name__ == '__main__':
     else:
         raise ValueError("Unsupported optimizer")
 
-    ckpt=f"{args.model_name}_{args.mask_loss}_epochs{epochs}.pth"
+    ckpt=f"{args.model_name}_{args.loss}_epochs{epochs}.pth"
     
     # lists to keep track of losses and accuracies
     best_loss = 0
@@ -95,9 +98,9 @@ if __name__ == '__main__':
     for epoch in range(epochs):
         print(f"[INFO]: Epoch {epoch+1} of {epochs}")
         train_epoch_losses, train_epoch_acc, train_epoch_dice, train_epoch_f1 = train_cd_model(model, train_dataloader,
-                                                optimizer, loss_mask, loss_boundary ,device)
+                                                optimizer, loss ,device)
         valid_epoch_losses, valid_epoch_acc, valid_epoch_dice, valid_epoch_f1 = validate_cd_model(model, valid_dataloader,
-                                                    loss_mask, loss_boundary, device)
+                                                    loss, device)
 
         valid_loss = valid_epoch_losses
 
