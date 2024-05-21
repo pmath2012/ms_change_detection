@@ -19,11 +19,9 @@ def ba_inner_loop(model, data, criterion_m, criterion_b, optimizer, device='cpu'
     loss_b = criterion_b(outputs_b, labels)
     train_running_loss = train_running_loss + loss_m.item() + loss_b.item()
     loss = loss_m+loss_b
-    # calculate the accuracy
-    _, preds = torch.max(outputs_m.data, 1)
-    running_metrics['loss'] = loss.item().cpu().numpy()
-    running_metrics['boundary_loss'] = loss_b.item().cpu().numpy()
-    running_metrics['mask_loss'] = loss_m.item().cpu().numpy()
+    running_metrics['loss'] = loss.item()
+    running_metrics['boundary_loss'] = loss_b.item()
+    running_metrics['mask_loss'] = loss_m.item()
     running_metrics['accuracy'] = accuracy(outputs_m.data, labels, task='binary').cpu().numpy()
     running_metrics['f1'] = binary_f1_score(outputs_m.data, labels).cpu().numpy()
     running_metrics['dice'] = dice(outputs_m.data, labels).cpu().numpy()
@@ -43,9 +41,7 @@ def cd_inner_loop(model, data, criterion, optimizer, device='cpu', train=True):
     # forward pass
     outputs_m = model(image1, image2)
     loss = criterion(outputs_m, labels)
-    # calculate the accuracy
-    _, preds = torch.max(outputs_m.data, 1)
-    running_metrics['loss'] = loss.item().cpu().numpy()
+    running_metrics['loss'] = loss.item()
     running_metrics['accuracy'] = accuracy(outputs_m.data, labels, task='binary').cpu().numpy()
     running_metrics['f1'] = binary_f1_score(outputs_m.data, labels).cpu().numpy()
     running_metrics['dice'] = dice(outputs_m.data, labels).cpu().numpy()

@@ -58,7 +58,7 @@ def get_siamese_train_loaders(train_file,valid_file, data_directory, batch_size=
     train_dataset = target_dataset(csv_file=train_csv,
                                     root_dir=data_directory,
                                transform = transforms.Compose([
-                                               target_transform()
+                                               target_transform(v_flip=True, h_flip=True, elastic_transform=True)
                                            ]))
 
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size,
@@ -68,7 +68,7 @@ def get_siamese_train_loaders(train_file,valid_file, data_directory, batch_size=
     valid_dataset = target_dataset(csv_file=valid_csv,
                                     root_dir=data_directory,
                                transform = transforms.Compose([
-                                               target_transform()
+                                               target_transform(v_flip=False, h_flip=False, elastic_transform=False)
                                            ]))
 
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size,

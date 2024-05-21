@@ -45,7 +45,12 @@ def parse_args():
     return parser.parse_args()
 
 if __name__ == '__main__':
+    
     args = parse_args()
+
+    print('-'*100)
+    print(f"\n\n\nTraining {args.model_name} \n\n\n")
+    print('-'*100)
 
     learning_rate = args.learning_rate
     loss = get_loss_function(args.loss)
@@ -69,7 +74,7 @@ if __name__ == '__main__':
     elif args.model_name == 'swinunetrc':
         model = SwinUNETRC(in_channels=2, out_channels=1)
     elif args.model_name == 'asppunet':
-        model = ASPPUNet(in_channels=2, n_classes=1)
+        model = ASPPUNet(in_channels=2, n_classes=1, encoder_widths=[ 32,64, 96, 128], decoder_widths=[96, 64, 32])
     else:
         raise ValueError("Unsupported model name")
 
@@ -86,7 +91,7 @@ if __name__ == '__main__':
     else:
         raise ValueError("Unsupported optimizer")
 
-    ckpt=f"{args.model_name}_{args.loss}_epochs{epochs}.pth"
+    ckpt=f"{args.model_name}_{args.loss}_epochs{epochs}_shallow.pth"
     
     # lists to keep track of losses and accuracies
     best_loss = 0
@@ -116,7 +121,7 @@ if __name__ == '__main__':
         print(f"Training : {train_epoch_losses:.3f}, training acc: {train_epoch_acc:.3f}, dice : {train_epoch_dice:.3f}, f1: {train_epoch_f1:.3f}")
         print(f"Validation : {valid_epoch_losses:.3f}, validation acc: {valid_epoch_acc:.3f}, dice : {valid_epoch_dice:.3f}, f1: {valid_epoch_f1:.3f}")
 
-        if len(valid_loss) == 1:
+        if epoch == 0:
             print("saving first model")
             best_loss=valid_epoch_losses
             best_epoch=epoch
