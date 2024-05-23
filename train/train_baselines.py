@@ -74,7 +74,7 @@ if __name__ == '__main__':
     elif args.model_name == 'swinunetrc':
         model = SwinUNETRC(in_channels=2, out_channels=1)
     elif args.model_name == 'asppunet':
-        model = ASPPUNet(in_channels=2, n_classes=1, encoder_widths=[ 32,64, 96, 128], decoder_widths=[96, 64, 32])
+        model = ASPPUNet(in_channels=2, n_classes=1)
     else:
         raise ValueError("Unsupported model name")
 
@@ -91,7 +91,7 @@ if __name__ == '__main__':
     else:
         raise ValueError("Unsupported optimizer")
 
-    ckpt=f"{args.model_name}_{args.loss}_epochs{epochs}_shallow.pth"
+    ckpt=f"{args.model_name}_{args.loss}_epochs_{epochs}.pth"
     
     # lists to keep track of losses and accuracies
     best_loss = 0
