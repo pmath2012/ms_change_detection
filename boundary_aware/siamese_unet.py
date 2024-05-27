@@ -1,9 +1,25 @@
+import sys
+import os
+
+# Get the current directory
+current_dir = os.getcwd()
+
+# Get the parent directory
+parent_dir = os.path.dirname(current_dir)
+
+# Add the parent directory to the Python path
+sys.path.append(parent_dir)
+
 import torch
 from torch import nn
+
 from glasses.models import VisionModule
 from glasses.models.segmentation.unet import UNetEncoder, UNetDecoder
+from atrous_networks.unet import AtrousBasicBlock
 
-from ..utils.siamese_heads import DifferenceNetwork, ConcatNetwork
+from utils.siamese_heads import DifferenceNetwork, ConcatNetwork
+
+
 class SiameseNetwork(VisionModule):
     def __init__(self,
                  in_channels=1,
@@ -14,7 +30,7 @@ class SiameseNetwork(VisionModule):
                  head_nw = "concat",
                  **kwargs,):
         super().__init__()
-        self.encoder = encoder(in_channels=in_channels, **kwargs)
+        self.encoder = encoder(in_channels=in_channels, block=AtrousBasicBlock, aspp=True, **kwargs)
         self.boundary_decoder = boundary_decoder(
             lateral_widths=self.encoder.features_widths[::-1],
             start_features=self.encoder.widths[-1],

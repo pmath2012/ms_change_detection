@@ -17,7 +17,6 @@ def ba_inner_loop(model, data, criterion_m, criterion_b, optimizer, device='cpu'
     outputs_m, outputs_b = model(image1, image2)
     loss_m = criterion_m(outputs_m, labels)
     loss_b = criterion_b(outputs_b, labels)
-    train_running_loss = train_running_loss + loss_m.item() + loss_b.item()
     loss = loss_m+loss_b
     running_metrics['loss'] = loss.item()
     running_metrics['boundary_loss'] = loss_b.item()

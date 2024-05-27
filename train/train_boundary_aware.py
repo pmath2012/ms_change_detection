@@ -1,11 +1,24 @@
+import sys
+import os
+
+# Get the current directory
+current_dir = os.getcwd()
+
+# Get the parent directory
+parent_dir = os.path.dirname(current_dir)
+
+# Add the parent directory to the Python path
+sys.path.append(parent_dir)
+
 import argparse
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
-from ..boundary_aware import SiameseNetwork, BAUNet
-from ..utils.utils import get_loss_function
-from ..dataset import get_siamese_train_loaders
-from .training import train_cd_ba_model, validate_cd_ba_model
+from boundary_aware.siamese_unet import SiameseNetwork
+from boundary_aware.unet import BAUNet
+from utils.utils import get_loss_function
+from dataset import get_siamese_train_loaders
+from train.training import train_cd_ba_model, validate_cd_ba_model
 
 
 def check_keys(model, pretrain_path):
@@ -29,16 +42,16 @@ def check_keys(model, pretrain_path):
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Train Boundary Aware UNet')
-    parser.add_argument('--model_name', type=str, default='SiameseNetwork', help='Model name to use')
+    parser = argparse.ArgumentParser(description='Train baselines')
+    parser.add_argument('--model_name', type=str, default='unet', help='Model name to use')
     parser.add_argument('--epochs', type=int, default=50, help='Number of epochs to train')
     parser.add_argument('--learning_rate', type=float, default=2e-5, help='Learning rate')
     parser.add_argument('--optimizer', type=str, default='Adam', help='Optimizer to use')
     parser.add_argument('--pretrain', action='store_true', help='Use pre-trained model')
     parser.add_argument('--pretrain_path', type=str, default="", help='Path to pre-trained model')
     parser.add_argument('--mask_loss', type=str, choices=['f0.5', 'f1', 'f2'], default='f0.5', help='Mask loss function')
-    parser.add_argument('--boundary_loss', type=str, choices=['BCE'], default='BCE', help='Boundary loss function')
-    parser.add_argument('--data_directory', type=str, default='/home/prateek/ms_project/change_balcrop256/', help='Path to data directory')
+    parser.add_argument('--boundary_loss', type=str, choices=['f0.5', 'f1', 'f2'], default='bce', help='Boundary loss function')
+    parser.add_argument('--data_directory', type=str, default='/home/prateek/from_kipchoge/ms_project/change_balcrop256/', help='Path to data directory')
     parser.add_argument('--batch_size', type=int, default=12, help='Batch size')
     parser.add_argument('--training_file', type=str, default='train_change_only.csv', help='Training file')
     parser.add_argument('--validation_file', type=str, default='valid.csv', help='Validation file')
@@ -113,7 +126,7 @@ if __name__ == '__main__':
         print(f"Training : {train_epoch_losses[0]:.3f}, b: {train_epoch_losses[2]:.3f}, m: {train_epoch_losses[1]:.3f}, training acc: {train_epoch_acc:.3f}, dice : {train_epoch_dice:.3f}, f1: {train_epoch_f1:.3f}")
         print(f"Validation : {valid_epoch_losses[0]:.3f}, b: {valid_epoch_losses[2]:.3f},m: {valid_epoch_losses[1]:.3f}, validation acc: {valid_epoch_acc:.3f}, dice : {valid_epoch_dice:.3f}, f1: {valid_epoch_f1:.3f}")
 
-        if len(valid_loss) == 1:
+        if epoch==0:
             print("saving first model")
             best_loss=valid_epoch_losses[0]
             best_epoch=epoch

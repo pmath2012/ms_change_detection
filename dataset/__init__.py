@@ -2,9 +2,9 @@ import os
 from torch.utils.data import DataLoader
 from torchvision import transforms
 
-from .lesions_dataset import MSLesionDataset
-from .siamese_dataset import MSSiameseLesionDataset
-from .ba_dataset import MSBADataset
+from dataset.lesions_dataset import MSLesionDataset
+from dataset.siamese_dataset import MSSiameseLesionDataset
+from dataset.ba_dataset import MSBADataset
 from utils.group_transforms import Normalize, NormalizeSiamese, NormalizeBASiamese
 
 
@@ -32,12 +32,18 @@ def get_train_loaders(train_file,valid_file, data_directory, batch_size):
 
     return train_dataloader, valid_dataloader
 
-def get_test_loaders(test_file, data_directory, with_boundary=False):
+def get_siamese_test_loaders(test_file, data_directory, with_boundary=False):
     test_csv = data_directory+test_file
-    test_dataset = MSSiameseLesionDataset(csv_file=test_csv,
+    if with_boundary:
+        target_dataset = MSBADataset
+        target_transform = NormalizeBASiamese
+    else:
+        target_dataset = MSSiameseLesionDataset
+        target_transform = NormalizeSiamese
+    test_dataset = target_dataset(csv_file=test_csv,
                                     root_dir=data_directory,
                                transform = transforms.Compose([
-                                               NormalizeSiamese()
+                                               target_transform(v_flip=False, h_flip=False, elastic_transform=False)
                                            ]))
 
     test_dataloader = DataLoader(test_dataset, batch_size=1,

@@ -30,7 +30,7 @@ def get_loss_function(loss_name):
         loss = DiceFocalLoss(include_background=False, to_onehot_y=False, sigmoid=True)
     elif loss_name == 'DiceCELoss':
         loss = DiceCELoss(include_background=False, to_onehot_y=False, sigmoid=True)
-    elif loss_name == "BCE":
+    elif loss_name == "BCE" or loss_name == "bce":
         loss = BCE()
     else:
         raise ValueError("Unsupported  loss")
