@@ -28,9 +28,10 @@ class SiameseNetwork(VisionModule):
                  boundary_decoder = UNetDecoder,
                  mask_decoder = UNetDecoder,
                  head_nw = "concat",
+                 aspp=False,
                  **kwargs,):
         super().__init__()
-        self.encoder = encoder(in_channels=in_channels, block=AtrousBasicBlock, aspp=True, **kwargs)
+        self.encoder = encoder(in_channels=in_channels, block=AtrousBasicBlock, aspp=aspp, **kwargs)
         self.boundary_decoder = boundary_decoder(
             lateral_widths=self.encoder.features_widths[::-1],
             start_features=self.encoder.widths[-1],
