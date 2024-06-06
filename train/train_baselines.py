@@ -3,6 +3,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from baselines.unet import UNetC, SwinUNETRC, UNETRC
+from transformer import vision_transformer
 from atrous_networks.unet import ASPPUNet
 from utils.utils import get_loss_function
 from dataset import get_siamese_train_loaders
@@ -75,6 +76,12 @@ if __name__ == '__main__':
         model = SwinUNETRC(in_channels=2, out_channels=1)
     elif args.model_name == 'asppunet':
         model = ASPPUNet(in_channels=2, n_classes=1)
+    elif args.model_name == 'vitseg_r18_backbone':
+        model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet18')
+    elif args.model_name == 'vitseg_r50_backbone':
+        model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet50')
+    elif args.model_name == 'vitseg_r101_backbone':
+        model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet101')
     else:
         raise ValueError("Unsupported model name")
 
