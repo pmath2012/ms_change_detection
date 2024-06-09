@@ -5,8 +5,7 @@ from torch.autograd import Variable
 from glasses.interpretability import Interpretability
 from typing import Callable
 from interpretability.storage import ForwardModuleStorage, BackwardModuleStorage
-from glasses.interpretability.utils import tensor2cam
-from interpretability.utils import find_last_layer
+from interpretability.utils import find_last_layer, tensor2cam
 
 class GradCamResultSiam:
     def __init__(
@@ -34,8 +33,8 @@ class GradCamResultSiam:
 
         outs = []
         for i, cam in enumerate(self.cams):
-            cam_on_img1 = self.normalize_cam(tensor2cam(img1.squeeze(0), cam))
-            cam_on_img2 = self.normalize_cam(tensor2cam(img2.squeeze(0), cam))
+            cam_on_img1 = tensor2cam(img1.squeeze(0), cam)
+            cam_on_img2 = tensor2cam(img2.squeeze(0), cam)
             outs.append((cam_on_img1, cam_on_img2))
         # output = torch.sigmoid(self.output)
         # boundary = torch.sigmoid(self.boundary

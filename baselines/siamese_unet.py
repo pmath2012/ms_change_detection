@@ -3,7 +3,7 @@ import torch.nn.functional as Fn
 from torch import nn
 from glasses.models.segmentation.unet import UNet
 from monai.networks.nets import SwinUNETR, UNETR
-from ..utils.siamese_heads import Identity, DifferenceNetwork, ConcatNetwork
+from utils.siamese_heads import Identity, DifferenceNetwork, ConcatNetwork
 
 class SiameseNetwork(nn.Module):
     def __init__(self, base_model,head_nw="difference", weights=None, n_classes=1):
