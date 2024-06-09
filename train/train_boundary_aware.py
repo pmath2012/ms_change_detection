@@ -15,6 +15,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
 from boundary_aware.siamese_unet import SiameseNetwork
+from boundary_aware.transformer import BAViTSeg
 from boundary_aware.unet import BAUNet
 from utils.utils import get_loss_function
 from dataset import get_siamese_train_loaders
@@ -50,8 +51,8 @@ def parse_args():
     parser.add_argument('--pretrain', action='store_true', help='Use pre-trained model')
     parser.add_argument('--pretrain_path', type=str, default="", help='Path to pre-trained model')
     parser.add_argument('--mask_loss', type=str, choices=['f0.5', 'f1', 'f2'], default='f0.5', help='Mask loss function')
-    parser.add_argument('--boundary_loss', type=str, choices=['f0.5', 'f1', 'f2'], default='bce', help='Boundary loss function')
-    parser.add_argument('--data_directory', type=str, default='/home/prateek/from_kipchoge/ms_project/change_balcrop256/', help='Path to data directory')
+    parser.add_argument('--boundary_loss', type=str, choices=['f0.5', 'f1', 'f2','bce'], default='bce', help='Boundary loss function')
+    parser.add_argument('--data_directory', type=str, default='/home/prateek/ms_project/change_balcrop256/', help='Path to data directory')
     parser.add_argument('--batch_size', type=int, default=12, help='Batch size')
     parser.add_argument('--training_file', type=str, default='train_change_only.csv', help='Training file')
     parser.add_argument('--validation_file', type=str, default='valid.csv', help='Validation file')
@@ -60,6 +61,11 @@ def parse_args():
 
 if __name__ == '__main__':
     args = parse_args()
+    print("\n\n\n\n\n\n")
+    print("*"*100)
+    print(f"Training {args.model_name} with mask loss {args.mask_loss} and boundary loss {args.boundary_loss}")
+    print("*"*100)
+    print("\n\n\n\n\n\n")
 
     learning_rate = args.learning_rate
     loss_mask = get_loss_function(args.mask_loss)
@@ -79,6 +85,8 @@ if __name__ == '__main__':
 
     if args.model_name == 'SiameseNetwork':
         model = SiameseNetwork(in_channels=1, out_channels=1)
+    if args.model_name == "transformer":
+        model = BAViTSeg(in_channels=1, num_classes=1, with_pos='learned')
     else:
         raise ValueError("Unsupported model name")
 
