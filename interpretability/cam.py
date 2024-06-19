@@ -42,6 +42,8 @@ class GradCAM:
     def _get_encoder(self):
         if self.model_name == "siamese_unet":
             return self.model.base_model.encoder
+        if self.model_name == "pfpn":
+            return self.model.model.encoder
         elif self.model_name == "boundary_aware":
             return self.model.encoder
         else:
@@ -104,7 +106,7 @@ class GradCAM:
 
 def show_cam_on_image(img, mask):
     img = cv2.cvtColor(img, cv2.COLOR_GRAY2RGB)
-    heatmap = cv2.applyColorMap(np.uint8(255 * mask), cv2.COLORMAP_JET)
+    heatmap = cv2.applyColorMap(np.uint8(255 * (1-mask)), cv2.COLORMAP_JET)
     heatmap = np.float32(heatmap) / 255
     cam = heatmap + np.float32(img)
     cam = cam / np.max(cam)
