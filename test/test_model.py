@@ -8,6 +8,7 @@ from torch.nn import functional as F
 from tqdm import tqdm
 from atrous_networks.unet import ASPPUNet
 from baselines.unet import UNetC, SwinUNETRC, UNETRC
+from transformer import vision_transformer
 
 def predict(model_name, model, dataloader, target_dir, dataset, device, with_boundary=False):
     model.eval()
@@ -55,6 +56,8 @@ if __name__ == '__main__':
         model = SwinUNETRC(in_channels=2, out_channels=1)
     elif args.model_name == 'asppunet':
         model = ASPPUNet(in_channels=2, n_classes=1)
+    elif args.model_name == 'vitseg_r50_backbone_enc_dec_2':
+        model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet50', enc_depth=2, dec_depth=2)
     else:
         raise ValueError("Unsupported model name")
     

@@ -80,6 +80,8 @@ if __name__ == '__main__':
         model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet18')
     elif args.model_name == 'vitseg_r50_backbone':
         model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet50')
+    elif args.model_name == 'vitseg_r50_backbone_enc_dec_2':
+        model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet50', enc_depth=2, dec_depth=2)
     elif args.model_name == 'vitseg_r101_backbone':
         model = vision_transformer.ViTSeg(in_channels=1, num_classes=1, with_pos='learned',backbone='resnet101')
     else:

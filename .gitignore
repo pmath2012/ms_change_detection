@@ -163,3 +163,8 @@ cython_debug/
 nohup.*
 stacks/*/*
 predictions/*/*
+ablation_stacks/*
+figures/*
+saved_models/*
+notebooks/*.csv
+saved_results/*
