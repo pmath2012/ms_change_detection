@@ -8,6 +8,7 @@ To train models without boundary enhancement
 python train/train_baselines.py 
 ```
 Models implemented - UNet, PFPN, Siamese U-Net, Vision Transformer
+<br>
 To train models with boundary enhancement
 ```
 python train/train_beams.py 
